@@ -89,8 +89,8 @@ class Follow(models.Model):
                 fields=['author', 'user'],
                 name='unique follow'
             ),
-        #     models.CheckConstraint(
-        #         check=~models.Q(author=models.F('user')),
-        #         name="author_not_user"
-        #     ),
+            # models.CheckConstraint(
+            #     check=~models.Q(author=models.F('user')),
+            #     name="author_not_user"
+            # ),
         ]
