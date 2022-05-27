@@ -94,4 +94,3 @@ class Follow(models.Model):
                 name="author_not_user"
             ),
         ]
-        
