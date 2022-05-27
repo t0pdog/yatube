@@ -68,7 +68,7 @@ def profile(request, username):
         'following': following,
     }
     context.update(paginator_func(posts, request))
-    
+
     return render(request, template, context)
 
 
@@ -175,7 +175,7 @@ def follow_index(request):
 @login_required
 def profile_follow(request, username):
     """Подписаться на автора"""
-    user=request.user
+    user = request.user
     author = get_object_or_404(User, username=username)
     if user != author:
         Follow.objects.create(

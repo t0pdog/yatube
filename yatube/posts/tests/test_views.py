@@ -2,7 +2,7 @@ from django.contrib.auth import get_user_model
 from django.test import Client, TestCase
 from django.urls import reverse
 from django import forms
-from posts.models import Post, Group, Comment, Follow
+from posts.models import Post, Group, Comment
 from itertools import islice
 from django.core.cache import cache
 
@@ -218,7 +218,7 @@ class PostPagesTests(TestCase):
         authorized_client2 = Client()
         authorized_client2.force_login(follower_user)
         # Подписываемся
-        response_follow = authorized_client2.get(reverse(
+        authorized_client2.get(reverse(
             'posts:profile_follow',
             kwargs={'username': self.post.author.username}
         ))
@@ -227,7 +227,7 @@ class PostPagesTests(TestCase):
         ))
         self.assertEqual(len(response.context['page_obj']), 1)
         # Отписываемся
-        response_unfollow = authorized_client2.get(reverse(
+        authorized_client2.get(reverse(
             'posts:profile_unfollow',
             kwargs={'username': self.post.author.username}
         ))
@@ -248,7 +248,7 @@ class PostPagesTests(TestCase):
         authorized_client3 = Client()
         authorized_client3.force_login(not_follower)
         # Подписывается follower_user
-        response_follow = authorized_client2.get(reverse(
+        authorized_client2.get(reverse(
             'posts:profile_follow',
             kwargs={'username': self.post.author.username}
         ))
