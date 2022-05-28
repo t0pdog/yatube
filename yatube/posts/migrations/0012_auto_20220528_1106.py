@@ -3,6 +3,11 @@
 from django.db import migrations, models
 import django.db.models.expressions
 
+def forwards_func(apps, schema_editor):
+    Follow = apps.get_model("posts", "Follow")
+    db_alias = schema_editor.connection.alias
+    Follow.objects.using(db_alias).filter(author=models.F("user")).delete()
+
 
 class Migration(migrations.Migration):
 
@@ -11,6 +16,11 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
+        migrations.RunPython(
+            code=forwards_func,
+            reverse_code=migrations.RunPython.noop,
+            elidable=True,
+        ),
         migrations.AddConstraint(
             model_name='follow',
             constraint=models.CheckConstraint(check=models.Q(_negated=True, author=django.db.models.expressions.F('user')), name='author_not_user'),
