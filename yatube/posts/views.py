@@ -181,7 +181,7 @@ def profile_follow(request, username):
         author=author,
         user=request.user,
     ).exists()
-    if is_follower != author and is_follower == False:
+    if is_follower != author and is_follower is False:
         Follow.objects.create(
             author=author,
             user=request.user,
