@@ -175,13 +175,13 @@ def follow_index(request):
 @login_required
 def profile_follow(request, username):
     """Подписаться на автора"""
-    # user = request.user
+
     author = get_object_or_404(User, username=username)
     is_follower = Follow.objects.filter(
         author=author,
         user=request.user,
     ).exists()
-    if is_follower != author and is_follower is False:
+    if request.user != author and not is_follower:
         Follow.objects.create(
             author=author,
             user=request.user,
