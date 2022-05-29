@@ -50,10 +50,10 @@ class PostPagesTests(TestCase):
         self.guest_client = Client()
         self.authorized_client = Client()
         self.authorized_client.force_login(self.user)
-        
+
         self.authorized_client2 = Client()
         self.authorized_client2.force_login(self.follower_user)
-        
+
         self.authorized_client3 = Client()
         self.authorized_client3.force_login(self.not_follower)
 
