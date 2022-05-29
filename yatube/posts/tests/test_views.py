@@ -1,11 +1,12 @@
+from itertools import islice
+
+from django import forms
 from django.contrib.auth import get_user_model
+from django.core.cache import cache
 from django.test import Client, TestCase
 from django.urls import reverse
-from django import forms
-from posts.models import Post, Group, Comment
-from itertools import islice
-from django.core.cache import cache
 
+from posts.models import Comment, Group, Post
 
 User = get_user_model()
 
@@ -16,6 +17,10 @@ class PostPagesTests(TestCase):
         super().setUpClass()
 
         cls.user = User.objects.create_user(username='HasNoName')
+        # Создаем подписчика
+        cls.follower_user = User.objects.create_user(username='follower_user')
+        # Создаем неподписчика
+        cls.not_follower = User.objects.create_user(username='not_follower')
 
         cls.group = Group.objects.create(
             title='test-group',
@@ -45,6 +50,12 @@ class PostPagesTests(TestCase):
         self.guest_client = Client()
         self.authorized_client = Client()
         self.authorized_client.force_login(self.user)
+        
+        self.authorized_client2 = Client()
+        self.authorized_client2.force_login(self.follower_user)
+        
+        self.authorized_client3 = Client()
+        self.authorized_client3.force_login(self.not_follower)
 
     def test_pages_uses_correct_template(self):
         """URL-адрес использует соответствующий шаблон."""
@@ -213,25 +224,22 @@ class PostPagesTests(TestCase):
     def test_user_follows(self):
         """Авторизованный пользователь может подписываться
         на других пользователей и удалять их из подписок."""
-        # Создаем подписчика
-        follower_user = User.objects.create_user(username='follower_user')
-        authorized_client2 = Client()
-        authorized_client2.force_login(follower_user)
+
         # Подписываемся
-        authorized_client2.get(reverse(
+        self.authorized_client2.get(reverse(
             'posts:profile_follow',
             kwargs={'username': self.post.author.username}
         ))
-        response = authorized_client2.get(reverse(
+        response = self.authorized_client2.get(reverse(
             'posts:follow_index',
         ))
         self.assertEqual(len(response.context['page_obj']), 1)
         # Отписываемся
-        authorized_client2.get(reverse(
+        self.authorized_client2.get(reverse(
             'posts:profile_unfollow',
             kwargs={'username': self.post.author.username}
         ))
-        response = authorized_client2.get(reverse(
+        response = self.authorized_client2.get(reverse(
             'posts:follow_index',
         ))
         self.assertEqual(len(response.context['page_obj']), 0)
@@ -239,16 +247,9 @@ class PostPagesTests(TestCase):
     def test_user_follows(self):
         """Новая запись пользователя появляется в ленте тех,
         кто на него подписан и не появляется в ленте тех, кто не подписан."""
-        # Создаем подписчика
-        follower_user = User.objects.create_user(username='follower_user')
-        authorized_client2 = Client()
-        authorized_client2.force_login(follower_user)
-        # Создаем неподписчика
-        not_follower = User.objects.create_user(username='not_follower')
-        authorized_client3 = Client()
-        authorized_client3.force_login(not_follower)
+
         # Подписывается follower_user
-        authorized_client2.get(reverse(
+        self.authorized_client2.get(reverse(
             'posts:profile_follow',
             kwargs={'username': self.post.author.username}
         ))
@@ -258,12 +259,12 @@ class PostPagesTests(TestCase):
             author=self.user,
         )
         # Проверяем что в ленте подписчика появился ещё пост
-        response = authorized_client2.get(reverse(
+        response = self.authorized_client2.get(reverse(
             'posts:follow_index',
         ))
         self.assertEqual(len(response.context['page_obj']), 2)
         # Проверяем что в ленте неподписчика нет постов
-        response = authorized_client3.get(reverse(
+        response = self.authorized_client3.get(reverse(
             'posts:follow_index',
         ))
         self.assertEqual(len(response.context['page_obj']), 0)

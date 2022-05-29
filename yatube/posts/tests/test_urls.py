@@ -1,7 +1,9 @@
-from django.contrib.auth import get_user_model
-from django.test import TestCase, Client
-from posts.models import Post, Group
 from http import HTTPStatus
+
+from django.contrib.auth import get_user_model
+from django.test import Client, TestCase
+
+from posts.models import Group, Post
 
 User = get_user_model()
 
@@ -41,6 +43,7 @@ class PostURLTests(TestCase):
             '/posts/1/': 'posts/post_detail.html',
             '/posts/1/edit/': 'posts/create_post.html',
             '/create/': 'posts/create_post.html',
+            '/2/': 'core/404.html',
         }
         for address, template in templates_url_names.items():
             with self.subTest(address=address):
